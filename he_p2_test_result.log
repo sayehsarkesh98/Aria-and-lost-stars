@@ -1,0 +1,153 @@
+
+[a] parity p1 vs p2: Easy/Normal (all stages) and Hard stages 1-2 (widow unlocks at 3) -> identical, incl. Math.random count
+  ok   dif0 stage1: spawn sequence identical (3 spawns)
+  ok   dif0 stage1: final state + Math.random count identical
+  ok   dif0 stage1: no page errors
+  ok   dif0 stage3: spawn sequence identical (8 spawns)
+  ok   dif0 stage3: final state + Math.random count identical
+  ok   dif0 stage3: no page errors
+  ok   dif0 stage6: spawn sequence identical (11 spawns)
+  ok   dif0 stage6: final state + Math.random count identical
+  ok   dif0 stage6: no page errors
+  ok   dif0 stage8: spawn sequence identical (15 spawns)
+  ok   dif0 stage8: final state + Math.random count identical
+  ok   dif0 stage8: no page errors
+  ok   dif0 stage12: spawn sequence identical (7 spawns)
+  ok   dif0 stage12: final state + Math.random count identical
+  ok   dif0 stage12: no page errors
+  ok   dif1 stage1: spawn sequence identical (4 spawns)
+  ok   dif1 stage1: final state + Math.random count identical
+  ok   dif1 stage1: no page errors
+  ok   dif1 stage3: spawn sequence identical (12 spawns)
+  ok   dif1 stage3: final state + Math.random count identical
+  ok   dif1 stage3: no page errors
+  ok   dif1 stage6: spawn sequence identical (20 spawns)
+  ok   dif1 stage6: final state + Math.random count identical
+  ok   dif1 stage6: no page errors
+  ok   dif1 stage8: spawn sequence identical (19 spawns)
+  ok   dif1 stage8: final state + Math.random count identical
+  ok   dif1 stage8: no page errors
+  ok   dif1 stage12: spawn sequence identical (11 spawns)
+  ok   dif1 stage12: final state + Math.random count identical
+  ok   dif1 stage12: no page errors
+  ok   dif2 stage1: spawn sequence identical (14 spawns)
+  ok   dif2 stage1: final state + Math.random count identical
+  ok   dif2 stage1: no page errors
+  ok   dif2 stage2: spawn sequence identical (13 spawns)
+  ok   dif2 stage2: final state + Math.random count identical
+  ok   dif2 stage2: no page errors
+
+[b] registry + natural spawn gating
+  ok   HEX[6] registered: Silk Widow 40x34, unlock 3, max 2, weight 1, place ceiling
+  ok   hp = 4 + (stage>>3): 4 at stage 3/7, 5 at 8/14
+  ok   t6 registered (later parts may add more), web pjHit + blHit hooks present, HE.root tunables
+  ok   Hard stage 3 (share=1; the widow is the only eligible type there): widows spawn (2), never more than max 2 alive (2)
+  ok     ... no errors / no HE warnings
+  ok   Hard stage 2 (locked): no widow
+  ok   Easy stage 4: no widow
+  ok   Normal stage 4: no widow
+  ok   Hard boss stage 5: no widow
+  ok   Hard boss stage 10: no widow
+
+[c] root core (heRoot, movement lock, shoot/aim stay on, timer, mash, immunity, invulnerable states, shield)
+  ok   web ball on player: pl.rt == 130, ball removed, no damage
+  ok   rooted: holding right/left does not move the player (pl.vx = 0)
+  ok   rooted: jump key ignored (still grounded, jump buffer flushed)
+  ok   rooted: dash ignored (pl.dt stays 0, cooldown not consumed)
+  ok   rooted: shooting + aiming stay active (up-shots fired: 2, vy -11.0)
+  ok   rooted: shooting left works (star vx<0, facing left)
+  ok   rooted in mid-air: gravity still applies, no horizontal drift
+  ok   unmashed root lasts exactly 130 ticks, then pl.rtI == 150
+  ok   immunity: web ball during rtI does not root (and is removed); rtI counts down 150 -> 0
+  ok   after immunity ends the player can be rooted again
+  ok   mash (alternating every tick): root breaks in 15 ticks (<<130), immunity granted
+  ok   same-direction repeats do not count (only the first edge): root lasts 122 ticks
+  ok   mash with real keys (ArrowLeft/ArrowRight): ~every 6 ticks alternating -> breaks in 55 ticks
+  ok   taking damage never extends the root
+  ok   invulnerable states never root (pl.inv, tm.i, iv, au, pl.dt, rtI)
+  ok   already rooted -> second heRoot returns false and does not refresh
+  ok   shield absorbs the web (sh-- , inv 70, no root, no damage)
+  ok   Aurora (au>0) burns the silk away: root released, immunity set
+  ok   [c] no errors / no HE warnings
+
+[d] widow behaviour: DROP 50f, HANG 60-90f, SHOOT tell 40f, aim lock (no lead), cooldown, no shot at rooted/immune player
+  ok   DROP lasts 50 ticks and ends at the hang point y in [120,320]
+  ok   hang point keeps >= 220 px from the player
+  ok   HANG length 60-90 ticks
+  ok   HANG ticks elapse exactly (tl == ticks until decision)
+  ok   roll < .65 and ready -> TELL (st 2) with tm 40
+  ok   web ball appears after exactly 40 more ticks (tell 40f)
+  ok   web ball: k web, r 9, speed 5*ps (=6), he:1; widow goes to REC (st 3), cooldown 150*bc (=120)
+  ok   aim is locked for the last 18 ticks while the player keeps moving (moved 85 px)
+  ok   shot direction == locked aim point; NOT a lead shot
+  ok   immune player: the tell is cancelled, no web ball
+  ok   rooted player: tell cancelled -> punish (st 6), no web ball
+  ok   decision with rtI>0 never starts a shot (goes to the trap instead: CLIMB st 4)
+  ok   decision while on cooldown: keeps hanging (no shot before cd expires)
+  ok   web ball vanishes on the floor
+  ok   [d] no errors / no HE warnings
+
+[e] web patches: planting rules, ghost->solid, root on touch, stars, cap 5, expiry, clear on reset
+  ok   TRAP: roll >= .65 -> CLIMB (st 4)
+  ok   patches planted (1): 1-2 per trap, geometry 46x30, life 1500
+  ok   every patch on top of a STATIC platform (no p.t, no p.fx), never over a pit
+  ok   every patch >= 120 px from the player
+  ok   ghost phase: stepping into it does not root, patch stays; stars pass through
+  ok   ghost -> solid after 40 ticks; touching a solid patch roots (pl.rt ~130) and consumes it, no damage
+  ok   immune player walking through a solid patch: not rooted, patch NOT consumed
+  ok   normal star destroys a solid patch and is consumed
+  ok   pierce star (tm.p>0) destroys the patch and keeps flying
+  ok   cap: never more than 5 alive; the oldest ones fade (dy) and are removed afterwards
+  ok   patch expires after ghost 40 + life 1500 ticks
+  ok   clearStage() / reset hook: patches cleared, root + immunity reset
+  ok   load(n) (retry/respawn): patches + root cleared
+  ok   [e] no errors / no HE warnings
+
+[f] punish: lowers toward a rooted player, bites after >=90f with a 20f tell, mash/kill wins the race
+  ok   rooted player: widow switches HANG -> LOWER (st 6) at once
+  ok   bite tell starts no earlier than 90 ticks after the punish began
+  ok   bite tell lasts exactly 20 ticks, then the bite hurts the rooted player (1 hp)
+  ok   mashing free (~10 presses/s) before the bite: no damage, widow retreats (CLIMB st 4)
+  ok   breaking free DURING the bite tell cancels the bite (no damage)
+  ok   rooted player who shoots the widow (4 hp) up wins the race: killed at tick 46 (< 110), no bite damage
+  ok   after the bite the widow retreats (CLIMB) and re-hangs
+  ok   widow is stomp-able from above (default contact): hp 4 -> 2, player bounces, no damage
+  ok   Neon-Star daze: AI frozen (state/timer untouched)
+  ok   death: score 420 (t6 entry), husk spawned, thread-snap flag set
+  ok   [f] no errors / no HE warnings
+
+[g] failure paths -> heFail, game continues like v31 (no root left over)
+  ok   throw in ai: HE_ON=0, widows gone, patches/webs gone, no root left
+  ok   throw in ai: player moves normally afterwards
+  ok   throw in draw: HE_ON=0, widows gone, patches/webs gone, no root left
+  ok   throw in draw: player moves normally afterwards
+  ok   throw in pjHit.web: HE_ON=0, widows gone, patches/webs gone, no root left
+  ok   throw in pjHit.web: player moves normally afterwards
+  ok   throw in blHit: HE_ON=0, widows gone, patches/webs gone, no root left
+  ok   throw in blHit: player moves normally afterwards
+  ok   throw in step hook: HE_ON=0, widows gone, patches/webs gone, no root left
+  ok   throw in step hook: player moves normally afterwards
+  ok   throw in heRtTick (root tick): HE_ON=0, widows gone, patches/webs gone, no root left
+  ok   throw in heRtTick (root tick): player moves normally afterwards
+
+[h] drawing: every state, patches, web ball, cocoon, husk, dissolve snapshot; deterministic (no Math.random in draw)
+  ok   draw0 with widow(HANG), ghost+solid patches, web ball, husk: no Math.random calls inside draw
+  ok   widow/patch/web-ball/husk/cocoon painters deterministic (two renders of the same state give identical pixels, non-empty)
+  ok   draw0 in every widow state (DROP, TELL early/locked, SCUT, LOWER, BITE tell, STRIKE) + cocoon: HE stays on
+  ok   death dissolve snapshot (dd) + falling husk draw without errors
+
+[i] fuzz: Hard stages 3,4,6,8,9,12 x 6000 ticks, widows forced (share=1), scripted random input; invariants every tick
+  ok   stage 3: invariants hold (root<=130, immunity<=150, alive patches<=5 & on static platforms, vx==0 while rooted, widows<=2, HE stays on); roots=3, maxWidows=2
+  ok   stage 3: no page errors / warnings
+  ok   stage 4: invariants hold (root<=130, immunity<=150, alive patches<=5 & on static platforms, vx==0 while rooted, widows<=2, HE stays on); roots=3, maxWidows=2
+  ok   stage 4: no page errors / warnings
+  ok   stage 6: invariants hold (root<=130, immunity<=150, alive patches<=5 & on static platforms, vx==0 while rooted, widows<=2, HE stays on); roots=2, maxWidows=2
+  ok   stage 6: no page errors / warnings
+  ok   stage 8: invariants hold (root<=130, immunity<=150, alive patches<=5 & on static platforms, vx==0 while rooted, widows<=2, HE stays on); roots=2, maxWidows=2
+  ok   stage 8: no page errors / warnings
+  ok   stage 9: invariants hold (root<=130, immunity<=150, alive patches<=5 & on static platforms, vx==0 while rooted, widows<=2, HE stays on); roots=3, maxWidows=2
+  ok   stage 9: no page errors / warnings
+  ok   stage 12: invariants hold (root<=130, immunity<=150, alive patches<=5 & on static platforms, vx==0 while rooted, widows<=2, HE stays on); roots=2, maxWidows=2
+  ok   stage 12: no page errors / warnings
+
+RESULT: 133 passed, 0 failed

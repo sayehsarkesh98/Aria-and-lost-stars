@@ -1,0 +1,160 @@
+
+[a] parity p2 vs p3: Easy/Normal (all stages) and Hard stages 1-3 (Night-Fang unlocks at 4) -> identical, incl. Math.random count
+  ok   dif0 stage1: spawn sequence identical (3 spawns)
+  ok   dif0 stage1: final state + Math.random count identical
+  ok   dif0 stage1: no page errors
+  ok   dif0 stage4: spawn sequence identical (5 spawns)
+  ok   dif0 stage4: final state + Math.random count identical
+  ok   dif0 stage4: no page errors
+  ok   dif0 stage8: spawn sequence identical (12 spawns)
+  ok   dif0 stage8: final state + Math.random count identical
+  ok   dif0 stage8: no page errors
+  ok   dif0 stage12: spawn sequence identical (7 spawns)
+  ok   dif0 stage12: final state + Math.random count identical
+  ok   dif0 stage12: no page errors
+  ok   dif1 stage1: spawn sequence identical (7 spawns)
+  ok   dif1 stage1: final state + Math.random count identical
+  ok   dif1 stage1: no page errors
+  ok   dif1 stage4: spawn sequence identical (13 spawns)
+  ok   dif1 stage4: final state + Math.random count identical
+  ok   dif1 stage4: no page errors
+  ok   dif1 stage8: spawn sequence identical (20 spawns)
+  ok   dif1 stage8: final state + Math.random count identical
+  ok   dif1 stage8: no page errors
+  ok   dif1 stage12: spawn sequence identical (22 spawns)
+  ok   dif1 stage12: final state + Math.random count identical
+  ok   dif1 stage12: no page errors
+  ok   dif2 stage1: spawn sequence identical (16 spawns)
+  ok   dif2 stage1: final state + Math.random count identical
+  ok   dif2 stage1: no page errors
+  ok   dif2 stage2: spawn sequence identical (12 spawns)
+  ok   dif2 stage2: final state + Math.random count identical
+  ok   dif2 stage2: no page errors
+  ok   dif2 stage3: spawn sequence identical (13 spawns)
+  ok   dif2 stage3: final state + Math.random count identical
+  ok   dif2 stage3: no page errors
+
+[b] registry + natural spawn gating
+  ok   HEX[8] registered: Night-Fang 44x28, unlock 4, max 2, weight 1, place platform (+moving platforms)
+  ok   hp = 3 + (stage>>3): 3 at stage 4/7, 4 at 8/14
+  ok   registry keys 6,8 only; pjHit.cw + drawFront hooks; dmg/contact/dazed overrides; g == player gravity .62
+  ok   player gravity in update() really is .62 (grep)
+  ok   Hard stage 4 (share=1): hounds spawn (1), never more than 2 alive (1), placed on a platform with the right hp
+  ok     ... no errors / no HE warnings
+  ok   Hard stage 3 (locked): no Night-Fang
+  ok   Easy stage 4: no Night-Fang
+  ok   Normal stage 4: no Night-Fang
+  ok   Hard boss stage 5: no Night-Fang
+  ok   Hard boss stage 10: no Night-Fang
+
+[c] patrol (fast, turns at platform ends), hunt trigger (380 px horizontally, |dy| < 200)
+  ok   fang is placed on the 420 platform and patrols at e.sp*1.5 px/tick
+  ok   turns at both platform ends (2 turns) and never leaves [300, 456]
+  ok   player 570 px away: not hunting (hu 0)
+  ok   player 176 px away, 133 px below (|dy|<200): hunting, faces the player
+  ok   player 432 px away: not hunting; 332 px away: hunting (limit 380)
+  ok   player 235 px above (|dy| >= 200): not hunting
+  ok   player on the left: hunting turns the fang left (d == -1)
+  ok   [c] no errors / no HE warnings
+
+[d] CROUCH 28f, ballistic leap (speed <= 11, player gravity), target locked when the crouch ends, e.p cleared while airborne
+  ok   sequence PATROL -> CROUCH -> LEAP -> DAZED; crouch lasts exactly 28 ticks
+  ok   launch speed 9.98 <= 11 (maxV); fang lands on the floor (e.p = platform, feet on the surface); e.p is null while airborne
+  ok   lock: fang lands where the player WAS at the end of the crouch (684.8 vs 684.8), not where he was at its start (moved 51 px) or ended up (778)
+  ok   target beyond the launch-speed range (hunting but 11 px/tick is not enough): never crouches / leaps
+  ok   fgSolve: every accepted solution has speed <= 11 (max 10.755); reachable distances up to ~200 px on flat ground (15 ok / 15 out of range)
+  ok   ballistic exactness: after T steps (g = .62) the feet are exactly on the target (521) and the landing platform is the step (y 520)
+  ok   [d] no errors / no HE warnings
+
+[e] landing safety: pits, spike strips, lava, moving platforms, edges
+  ok   player over a pit (target above the gap): the hound never crouches or leaps
+  ok   control: player standing on the far floor piece (inside the safe margin): the hound leaps ACROSS the pit
+  ok   player standing in a spike strip X[]: no leap (landing point would be in the strip)
+  ok   control: same spot without the spikes: leaps
+  ok   lava stage, target on the lava-level floor: no leap
+  ok   control: same without lava: leaps down to the floor
+  ok   player standing on a MOVING platform: no leap (landing is unpredictable)
+  ok   control: same on a static platform: leaps
+  ok   control: the hound lands ON the static platform (e.p = the step, feet at y 520)
+  ok   landing within 10 px of a platform edge is refused (edge margin), the middle is accepted
+  ok   failsafe: a hound falling past every platform is removed (no stuck / endless fall)
+  ok   failsafe: rescue puts a hound that fell off the world back on the nearest static platform (patrol again)
+  ok   [e] no errors / no HE warnings
+
+[f] feint (30%): crouch 28 -> hop back 12 -> second crouch 18 with WHITE eyes -> leap; target locked at the very end
+  ok   random < .3 (feint): PATROL, CROUCH, HOP, CROUCH2, LEAP, DAZED
+  ok   lengths: crouch 28, hop 12, second crouch 18
+  ok   the hop goes BACK (away from the player, x decreases) and stays on the platform
+  ok   random >= .3: no feint: PATROL, CROUCH(28), LEAP, DAZED
+  ok   feint: the landing spot is locked at the END of the second crouch (736.0 vs 736.0; final player x 834)
+  ok   [f] no errors / no HE warnings
+
+[g] claw waves: two per landing, 4.2 px/tick, 160 px reach, removed at platform edges, height aware (must be jumped)
+  ok   landing spawns exactly 2 waves (k cw, he:1), speeds -4.2 / +4.2, 7 px above the surface, then DAZED for 45 ticks
+  ok   on a wide floor each wave is removed after travelling 160 px ([161, 161])
+  ok   on a short platform both waves are removed at the platform edges (before 160 px)
+  ok   player standing on the floor in the wave path: hurt exactly once (-1 hp), wave removed
+  ok   player in the air (feet 20 px up, clear of the 14 px wave): not hit
+  ok   feet 15 px up (just above the 14 px wave) is a clean jump
+  ok   feet 10 px up (hop too low) is still hit
+  ok   player with i-frames (dash / pl.inv): the wave passes through, no damage
+  ok   waves on a moving platform stay glued to its surface (max |sy - platform y| = 0.00e+00)
+  ok   [g] no errors / no HE warnings
+
+[h] stomp rules and damage: no stomp while airborne, stomp OK patrolling/dazed, double damage while dazed, always shoot-able
+  ok   patrolling hound: stomp works (hp 3 -> 1), player bounces, no damage
+  ok   airborne hound: NOT stompable: the player is hurt (-1), the hound is untouched
+  ok   dazed hound: stomp (2) is doubled -> dead
+  ok   damage: patrolling 1 -> 1, dazed 1 -> 2 (double), airborne 1 -> 1 (always shoot-able)
+  ok   a real player star hits a hound in mid-leap (hp -1, star consumed)
+  ok   a real star on a dazed hound deals double damage (hp 3 -> 1)
+  ok   invincibility power-up kills an airborne hound on contact (as the legacy test does)
+  ok   Neon-Star daze mid-leap: the hound still completes its fall and lands (never frozen in the air)
+  ok   Neon-Star daze on the ground: AI frozen (no patrol, cooldown untouched)
+  ok   DAZED lasts 45 ticks, then PATROL again with the after-cooldown (90, counting down: 75 left)
+  ok   (cooldown value after DAZED = HE.fang.after = 90)
+  ok   kill score 380 (t8 entry of the score table)
+  ok   [h] no errors / no HE warnings
+
+[i] moving platforms: carried while patrolling, can leap from one, never lands on one by design
+  ok   hound patrols a moving platform: carried (always on its surface and inside its span), platform moved 120 px
+  ok   a hound on a moving platform leaps at the player on the floor and lands on the floor
+  ok   [i] no errors / no HE warnings
+
+[j] failure paths -> heFail, game continues like v31
+  ok   throw in ai: HE_ON=0, no hounds, no claw waves left
+  ok   throw in ai: player moves normally afterwards
+  ok   throw in draw: HE_ON=0, no hounds, no claw waves left
+  ok   throw in draw: player moves normally afterwards
+  ok   throw in contact: HE_ON=0, no hounds, no claw waves left
+  ok   throw in contact: player moves normally afterwards
+  ok   throw in dmg: HE_ON=0, no hounds, no claw waves left
+  ok   throw in dmg: player moves normally afterwards
+  ok   throw in dazed: HE_ON=0, no hounds, no claw waves left
+  ok   throw in dazed: player moves normally afterwards
+  ok   throw in pjHit.cw: HE_ON=0, no hounds, no claw waves left
+  ok   throw in pjHit.cw: player moves normally afterwards
+  ok   throw in onKill: HE_ON=0, no hounds, no claw waves left
+  ok   throw in onKill: player moves normally afterwards
+
+[k] drawing: every state, preview arc + landing mark, after-images, waves, dazed stars; deterministic; no Math.random in painters
+  ok   draw0 in every hound state (patrol, crouch+arc, hop, crouch2 white eyes, airborne after-images, dazed) + claw waves: HE stays on
+  ok   no Math.random calls inside draw0 with the hound in view
+  ok   hound / waves painters deterministic in crouch and airborne states (identical pixels on re-render, non-empty, states differ)
+  ok   death dissolve snapshot (dd: no eyes, no arc, no after-images) draws without errors
+  ok   [k] no errors / no HE warnings
+
+[l] fuzz: Hard stages 4,6,8,9,12 x 6000 ticks, hounds + widows forced (share=1), scripted random input; invariants every tick
+  ok   stage 4: invariants hold (on a platform when grounded / e.p null + above the pit line when airborne, no spike/lava landings, inside the screen, <= 2 hounds, <= 2 widows, HE stays on); leaps=3 landings=3 maxHounds=2
+  ok   stage 4: no page errors / warnings
+  ok   stage 6: invariants hold (on a platform when grounded / e.p null + above the pit line when airborne, no spike/lava landings, inside the screen, <= 2 hounds, <= 2 widows, HE stays on); leaps=1 landings=1 maxHounds=2
+  ok   stage 6: no page errors / warnings
+  ok   stage 8: invariants hold (on a platform when grounded / e.p null + above the pit line when airborne, no spike/lava landings, inside the screen, <= 2 hounds, <= 2 widows, HE stays on); leaps=6 landings=6 maxHounds=2
+  ok   stage 8: no page errors / warnings
+  ok   stage 9: invariants hold (on a platform when grounded / e.p null + above the pit line when airborne, no spike/lava landings, inside the screen, <= 2 hounds, <= 2 widows, HE stays on); leaps=0 landings=0 maxHounds=2
+  ok   stage 9: no page errors / warnings
+  ok   stage 12: invariants hold (on a platform when grounded / e.p null + above the pit line when airborne, no spike/lava landings, inside the screen, <= 2 hounds, <= 2 widows, HE stays on); leaps=0 landings=0 maxHounds=2
+  ok   stage 12: no page errors / warnings
+  ok   fuzz exercised the leap path (total leaps 10)
+
+RESULT: 134 passed, 0 failed

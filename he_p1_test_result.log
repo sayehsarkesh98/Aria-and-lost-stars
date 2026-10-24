@@ -1,0 +1,120 @@
+
+[a] parity v31 vs p1 (seeded Math.random, 3000 ticks, scripted input, update() only)
+  ok   dif0 stage1: spawn sequence (tick,type,x,y) identical (5 spawns)
+  ok   dif0 stage1: final state + Math.random count identical
+  ok   dif0 stage1: no page errors
+  ok   dif0 stage3: spawn sequence (tick,type,x,y) identical (7 spawns)
+  ok   dif0 stage3: final state + Math.random count identical
+  ok   dif0 stage3: no page errors
+  ok   dif0 stage6: spawn sequence (tick,type,x,y) identical (9 spawns)
+  ok   dif0 stage6: final state + Math.random count identical
+  ok   dif0 stage6: no page errors
+  ok   dif0 stage8: spawn sequence (tick,type,x,y) identical (14 spawns)
+  ok   dif0 stage8: final state + Math.random count identical
+  ok   dif0 stage8: no page errors
+  ok   dif0 stage12: spawn sequence (tick,type,x,y) identical (5 spawns)
+  ok   dif0 stage12: final state + Math.random count identical
+  ok   dif0 stage12: no page errors
+  ok   dif1 stage1: spawn sequence (tick,type,x,y) identical (7 spawns)
+  ok   dif1 stage1: final state + Math.random count identical
+  ok   dif1 stage1: no page errors
+  ok   dif1 stage3: spawn sequence (tick,type,x,y) identical (13 spawns)
+  ok   dif1 stage3: final state + Math.random count identical
+  ok   dif1 stage3: no page errors
+  ok   dif1 stage6: spawn sequence (tick,type,x,y) identical (17 spawns)
+  ok   dif1 stage6: final state + Math.random count identical
+  ok   dif1 stage6: no page errors
+  ok   dif1 stage8: spawn sequence (tick,type,x,y) identical (23 spawns)
+  ok   dif1 stage8: final state + Math.random count identical
+  ok   dif1 stage8: no page errors
+  ok   dif1 stage12: spawn sequence (tick,type,x,y) identical (9 spawns)
+  ok   dif1 stage12: final state + Math.random count identical
+  ok   dif1 stage12: no page errors
+  ok   dif2 stage1: spawn sequence (tick,type,x,y) identical (16 spawns)
+  ok   dif2 stage1: final state + Math.random count identical
+  ok   dif2 stage1: no page errors
+  ok   dif2 stage3: spawn sequence (tick,type,x,y) identical (14 spawns)
+  ok   dif2 stage3: final state + Math.random count identical
+  ok   dif2 stage3: no page errors
+  ok   dif2 stage6: spawn sequence (tick,type,x,y) identical (22 spawns)
+  ok   dif2 stage6: final state + Math.random count identical
+  ok   dif2 stage6: no page errors
+  ok   dif2 stage8: spawn sequence (tick,type,x,y) identical (22 spawns)
+  ok   dif2 stage8: final state + Math.random count identical
+  ok   dif2 stage8: no page errors
+  ok   dif2 stage12: spawn sequence (tick,type,x,y) identical (14 spawns)
+  ok   dif2 stage12: final state + Math.random count identical
+  ok   dif2 stage12: no page errors
+
+[a2] Easy/Normal with dummies REGISTERED (HE must stay completely inert)
+  ok   dif0: identical to v31 with dummies registered
+  ok   dif1: identical to v31 with dummies registered
+  ok   Hard stage2 (below every unlock): identical to v31 (no randomness consumed)
+
+[b] dummies on Hard
+  ok   stage3: only unlocked types appear (6,8,9; never 7)
+  ok   stage3: total alive HE <= HE.maxNew (2)
+  ok   stage3: per-type max respected (t6,t8 <=2, t9 <=1)
+  ok   stage3: no page errors
+  ok   stage12 (>= lateStage): total alive HE cap is maxNewLate (3)
+  ok   stage12: no page errors
+  ok   minDist: every created HE enemy (air/ceiling/platform) starts >= 220px from the player (min 311.7)
+  ok   place function violating minDist: gives up silently (t9 never created), no errors
+  ok   platform walkers carry e.p and stand on it
+  ok   ai/contact run every tick for live HE enemies
+  ok   painter runs (dE2 dispatch)
+  ok   HEH.step: exactly once per play tick (1448 ticks)
+  ok   drawBack/drawFront/drawPlayer called once per drawn frame (5)
+  ok   drawPlayer receives the player centre (x+16,y+21) every frame
+  ok   quiet type: no hint pop-up registered; loud type: hint registered once
+  ok   an alive t6 exists for the damage test
+  ok   dmg hook: returning 0 = immune (hp unchanged), >0 applied
+  ok   kill(): onKill called once, t6 score = 420 (pop "+672")
+  ok   kill() score table for t6..t10 = 420/520/380/600/450 (Hard sc 1.6)
+  ok   pjHit true: generic hurt skipped, handler removes its projectile
+  ok   pjHit true without removal: projectile survives, no hurt
+  ok   pjHit false: falls through to the generic hit test (hurt)
+  ok   blHit true consumes the star, false keeps it
+  ok   HEH.reset: retry, restartStage, clearStage, load(n) each call it once
+  ok   draw hooks are wrapped in save/restore (alpha, transform, shadow restored)
+  ok   no page errors (hooks section)
+  ok   Normal: HEH.step is never called
+  ok   non-quiet HE enemy gets the pop-in scale (starts at 0), quiet one does not
+  ok   no page errors (quiet section)
+  ok   death dissolve: painter called with the dd flag (snapshot path) and no errors
+  ok   snapshot carries custom fields (st,tm,zz) + dd=1
+
+[c] exceptions inside HE code -> heFail (HE_ON=0, HE enemies removed, game goes on)
+  ok   ai              -> HE_ON=0, HE enemies/projectiles gone, 1 warning, game keeps running, no page errors
+  ok   draw            -> HE_ON=0, HE enemies/projectiles gone, 1 warning, game keeps running, no page errors
+  ok   contact         -> HE_ON=0, HE enemies/projectiles gone, 1 warning, game keeps running, no page errors
+  ok   dmg             -> HE_ON=0, HE enemies/projectiles gone, 1 warning, game keeps running, no page errors
+  ok   onKill          -> HE_ON=0, HE enemies/projectiles gone, 1 warning, game keeps running, no page errors
+  ok   dazed           -> HE_ON=0, HE enemies/projectiles gone, 1 warning, game keeps running, no page errors
+  ok   init            -> HE_ON=0, HE enemies/projectiles gone, 1 warning, game keeps running, no page errors
+  ok   hp              -> HE_ON=0, HE enemies/projectiles gone, 1 warning, game keeps running, no page errors
+  ok   place           -> HE_ON=0, HE enemies/projectiles gone, 1 warning, game keeps running, no page errors
+  ok   step hook       -> HE_ON=0, HE enemies/projectiles gone, 1 warning, game keeps running, no page errors
+  ok   drawBack hook   -> HE_ON=0, HE enemies/projectiles gone, 1 warning, game keeps running, no page errors
+  ok   drawPlayer hook -> HE_ON=0, HE enemies/projectiles gone, 1 warning, game keeps running, no page errors
+  ok   reset hook      -> HE_ON=0, HE enemies/projectiles gone, 1 warning, game keeps running, no page errors
+  ok   pjHit           -> HE_ON=0, HE enemies/projectiles gone, 1 warning, game keeps running, no page errors
+  ok   blHit           -> HE_ON=0, HE enemies/projectiles gone, 1 warning, game keeps running, no page errors
+  ok   after heFail the legacy spawner keeps spawning (E gets legacy types)
+
+[d] boss stages spawn no HE enemies; normal late stages do
+  ok   stage 5 (boss): no HE enemy ever created
+  ok   stage 10 (boss): no HE enemy ever created
+  ok   stage 14 (boss): no HE enemy ever created
+  ok   stage 11: HE enemies do appear
+  ok   stage 13: HE enemies do appear
+
+[e] debug
+  ok   ?hedebug exposes __heSpawn/__heHard
+  ok   __heSpawn ignores gates (unlock 99, Easy) and pushes into E
+  ok   debug-spawned enemy runs without errors
+  ok   without ?hedebug no debug globals
+  ok   fresh load: HE_ON=1, HEX empty, HEH shape, tunables
+  ok   no page errors at load
+
+106 checks passed, 0 failed
